@@ -35,8 +35,10 @@ export default function ProductCard({ product, onPress, onToggle, onDelete, onEd
       )}
 
       <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
-        {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
+        <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">{product.name}</Text>
+        {product.brand ? (
+          <Text style={styles.brand} numberOfLines={1} ellipsizeMode="tail">{product.brand}</Text>
+        ) : null}
         <Text style={styles.price}>
           {product.price > 0 ? `${product.price.toLocaleString('tr-TR')} ₺` : '—'}
         </Text>
@@ -61,6 +63,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     overflow: 'hidden',
+    minHeight: 90,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,

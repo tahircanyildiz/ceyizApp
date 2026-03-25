@@ -46,7 +46,7 @@ export default function LoginScreen({ navigation }) {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.inner}>
         <Text style={styles.title}>Yuvam</Text>
@@ -69,6 +69,7 @@ export default function LoginScreen({ navigation }) {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            autoCapitalize="none"
           />
 
           <TouchableOpacity style={styles.btn} onPress={handleLogin} disabled={loading}>

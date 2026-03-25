@@ -115,7 +115,13 @@ export default function ProductListScreen({ route, navigation }) {
           />
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>Bu kategoride ürün yok.</Text>
+          <Text style={styles.empty}>
+            {filter === 'purchased'
+              ? 'Bu kategoride henüz alınan ürün yok.'
+              : filter === 'unpurchased'
+              ? 'Bu kategoride bekleyen ürün yok.'
+              : 'Bu kategoride henüz ürün eklenmemiş.'}
+          </Text>
         }
         contentContainerStyle={styles.list}
         refreshControl={

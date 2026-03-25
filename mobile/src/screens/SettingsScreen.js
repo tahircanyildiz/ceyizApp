@@ -12,6 +12,7 @@ import {
   Platform,
   Modal,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getPartner, addPartner, updatePartner } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -28,7 +29,7 @@ const COLORS = {
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
-  // householdId kendi id'sine eşitse → ana kullanıcı, partner düzenleyebilir
+  const insets = useSafeAreaInsets();
   const isMainUser = user?.id === user?.householdId || user?.householdId === user?.id?.toString();
 
   const [partner, setPartner] = useState(null);
@@ -107,8 +108,8 @@ export default function SettingsScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}>
 
         {/* Hesap Bilgileri */}
         <View style={styles.section}>
@@ -187,7 +188,7 @@ export default function SettingsScreen() {
 
         {/* Çıkış */}
         <View style={styles.section}>
-          <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+          <TouchableOpacity style={styles.logoutBtn} onPress={() => Alert.alert('Çıkış Yap', 'Hesabınızdan çıkmak istediğinize emin misiniz?', [{ text: 'İptal', style: 'cancel' }, { text: 'Çıkış Yap', style: 'destructive', onPress: logout }])}>
             <Text style={styles.logoutText}>Çıkış Yap</Text>
           </TouchableOpacity>
         </View>
@@ -195,8 +196,9 @@ export default function SettingsScreen() {
 
       {/* Partner Düzenleme Modal */}
       <Modal visible={editModal} transparent animationType="slide">
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+          <View style={[styles.modalCard, { paddingBottom: insets.bottom || 24 }]}>
             <Text style={styles.modalTitle}>Partner Bilgilerini Düzenle</Text>
             <TextInput
               style={styles.input}
@@ -231,6 +233,7 @@ export default function SettingsScreen() {
             </View>
           </View>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
     </KeyboardAvoidingView>
   );
@@ -238,7 +241,7 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  content: { padding: 20, paddingBottom: 60 },
+  content: { padding: 20 },
   section: { marginBottom: 24 },
   sectionTitle: { fontSize: 12, fontWeight: '700', color: COLORS.muted, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   sectionDesc: { fontSize: 13, color: COLORS.muted, marginBottom: 14, lineHeight: 18 },

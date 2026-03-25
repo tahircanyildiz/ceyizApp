@@ -8,8 +8,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Modal,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getProductById } from '../services/api';
 
 const COLORS = {
@@ -25,6 +27,8 @@ const COLORS = {
 export default function ProductDetailScreen({ route, navigation }) {
   const [product, setProduct] = useState(route.params.product);
   const [loading, setLoading] = useState(false);
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useFocusEffect(
     useCallback(() => {
@@ -67,9 +71,12 @@ export default function ProductDetailScreen({ route, navigation }) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <View style={{ flex: 1 }}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingBottom: 32 + insets.bottom }]}>
       {product.imageUrl ? (
-        <Image source={{ uri: product.imageUrl }} style={styles.image} resizeMode="cover" />
+        <TouchableOpacity onPress={() => setImageModalVisible(true)} activeOpacity={0.9}>
+          <Image source={{ uri: product.imageUrl }} style={styles.image} resizeMode="cover" />
+        </TouchableOpacity>
       ) : (
         <View style={styles.imagePlaceholder}>
           <Text style={styles.imagePlaceholderText}>Fotoğraf Yok</Text>
@@ -92,9 +99,11 @@ export default function ProductDetailScreen({ route, navigation }) {
           <Text style={styles.price}>{product.price.toLocaleString('tr-TR')} ₺</Text>
         ) : null}
 
-        <Text style={styles.date}>
-          Eklenme: {new Date(product.createdAt).toLocaleDateString('tr-TR')}
-        </Text>
+        {product.isPurchased && product.purchasedAt ? (
+          <Text style={styles.date}>
+            Alınma: {new Date(product.purchasedAt).toLocaleDateString('tr-TR')}
+          </Text>
+        ) : null}
 
         <View style={styles.actions}>
           {/* Düzenle: satın alınmadıysa sadece isim, alındıysa detaylar */}
@@ -114,12 +123,22 @@ export default function ProductDetailScreen({ route, navigation }) {
         </View>
       </View>
     </ScrollView>
+
+      <Modal visible={imageModalVisible} transparent animationType="fade" onRequestClose={() => setImageModalVisible(false)}>
+        <View style={styles.imageModal}>
+          <TouchableOpacity style={styles.imageModalClose} onPress={() => setImageModalVisible(false)}>
+            <Text style={styles.imageModalCloseText}>✕</Text>
+          </TouchableOpacity>
+          <Image source={{ uri: product.imageUrl }} style={styles.imageModalImg} resizeMode="contain" />
+        </View>
+      </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  content: { paddingBottom: 40 },
+  content: { paddingBottom: 0 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
   image: { width: '100%', height: 280 },
   imagePlaceholder: {
@@ -166,4 +185,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   purchaseBtnText: { color: '#FFF', fontWeight: '700', fontSize: 15 },
+  imageModal: {
+    flex: 1,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageModalClose: {
+    position: 'absolute',
+    top: 52,
+    right: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  imageModalCloseText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  imageModalImg: { width: '100%', height: '100%' },
 });

@@ -53,8 +53,8 @@ export default function AddEditProductScreen({ route, navigation }) {
     }
 
     const result = fromCamera
-      ? await ImagePicker.launchCameraAsync({ quality: 0.7, allowsEditing: true, aspect: [1, 1] })
-      : await ImagePicker.launchImageLibraryAsync({ quality: 0.7, allowsEditing: true, aspect: [1, 1] });
+      ? await ImagePicker.launchCameraAsync({ quality: 0.7 })
+      : await ImagePicker.launchImageLibraryAsync({ quality: 0.7 });
 
     if (!result.canceled && result.assets?.[0]) {
       setImageUri(result.assets[0].uri);
@@ -91,10 +91,9 @@ export default function AddEditProductScreen({ route, navigation }) {
         if (showNameField) {
           payload.name = name.trim();
         } else {
-          // purchase fields
           payload.price = parseFloat(price) || 0;
           payload.brand = brand.trim();
-          payload.imageUrl = finalImageUrl;
+          payload.imageUrl = finalImageUrl || null;
           if (purchaseMode) payload.isPurchased = true;
         }
         await updateProduct(product._id, payload);

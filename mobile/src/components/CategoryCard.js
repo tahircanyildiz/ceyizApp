@@ -20,7 +20,7 @@ export default function CategoryCard({ category, onPress, onLongPress }) {
         <Text style={styles.icon}>🗂</Text>
       </View>
       <View style={styles.info}>
-        <Text style={styles.name}>{category.name}</Text>
+        <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">{category.name}</Text>
       </View>
       <Text style={styles.arrow}>›</Text>
     </TouchableOpacity>
@@ -53,5 +53,5 @@ const styles = StyleSheet.create({
   icon: { fontSize: 22 },
   info: { flex: 1 },
   name: { fontSize: 16, fontWeight: '700', color: COLORS.text },
-  arrow: { fontSize: 22, color: COLORS.muted, fontWeight: '300' },
+  arrow: { fontSize: 22, color: COLORS.muted, fontWeight: '300', marginLeft: 8 },
 });

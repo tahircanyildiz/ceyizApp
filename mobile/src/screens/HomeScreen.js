@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,6 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCategories, createCategory, deleteCategory } from '../services/api';
-import { useAuth } from '../context/AuthContext';
 import SpendingSummary from '../components/SpendingSummary';
 import CategoryCard from '../components/CategoryCard';
 
@@ -36,7 +35,7 @@ export default function HomeScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [saving, setSaving] = useState(false);
-  const { logout } = useAuth();
+
   const insets = useSafeAreaInsets();
 
   const fetchCategories = async () => {
@@ -96,14 +95,9 @@ export default function HomeScreen({ navigation }) {
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <View style={{ flexDirection: 'row', gap: 12, marginRight: 4 }}>
-          <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
-            <Text style={{ color: COLORS.primary, fontSize: 14, fontWeight: '600' }}>Ayarlar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={logout}>
-            <Text style={{ color: COLORS.muted, fontSize: 14 }}>Çıkış</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={{ marginRight: 4, paddingHorizontal: 10, paddingVertical: 8 }}>
+          <Text style={{ color: COLORS.primary, fontSize: 14, fontWeight: '600' }}>Ayarlar</Text>
+        </TouchableOpacity>
       ),
     });
   }, [navigation]);

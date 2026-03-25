@@ -24,7 +24,7 @@ export default function FilterBar({ active, onChange }) {
           onPress={() => onChange(f.key)}
           activeOpacity={0.7}
         >
-          <Text style={[styles.label, active === f.key && styles.labelActive]}>{f.label}</Text>
+          <Text style={[styles.label, active === f.key && styles.labelActive]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>{f.label}</Text>
         </TouchableOpacity>
       ))}
     </View>

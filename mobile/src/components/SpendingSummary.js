@@ -16,19 +16,27 @@ export default function SpendingSummary({ categories }) {
   const [purchasedItems, setPurchasedItems] = useState(0);
 
   useEffect(() => {
-    if (!categories || categories.length === 0) return;
+    if (!categories || categories.length === 0) {
+      setTotalSpend(0);
+      setTotalItems(0);
+      setPurchasedItems(0);
+      return;
+    }
     fetchAllProducts();
   }, [categories]);
 
   const fetchAllProducts = async () => {
     try {
-      const results = await Promise.all(categories.map((c) => getProducts(c._id)));
-      const allProducts = results.flatMap((r) => r.data);
+      // Tüm ürünleri tek istekle al (categoryId olmadan)
+      const res = await getProducts();
+      const allProducts = res.data;
 
       setTotalItems(allProducts.length);
       setPurchasedItems(allProducts.filter((p) => p.isPurchased).length);
       setTotalSpend(
-        allProducts.filter((p) => p.isPurchased).reduce((sum, p) => sum + (p.price || 0), 0)
+        allProducts
+          .filter((p) => p.isPurchased)
+          .reduce((sum, p) => sum + (p.price || 0), 0)
       );
     } catch (err) {
       // sessizce geç
