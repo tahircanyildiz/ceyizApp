@@ -24,6 +24,10 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    purchasedAt: {
+      type: Date,
+      default: null,
+    },
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',

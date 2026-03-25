@@ -54,9 +54,13 @@ exports.updateProduct = async (req, res) => {
   try {
     const { name, price, brand, imageUrl, isPurchased } = req.body;
 
+    const update = { name, price, brand, imageUrl, isPurchased };
+    if (isPurchased === true) update.purchasedAt = new Date();
+    if (isPurchased === false) update.purchasedAt = null;
+
     const product = await Product.findOneAndUpdate(
       { _id: req.params.id, householdId: req.householdId },
-      { name, price, brand, imageUrl, isPurchased },
+      update,
       { new: true, runValidators: true }
     );
 
