@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(ls /c/Projects/borcTakip/app/\\\\\\(tabs\\\\\\)/)",
-      "Bash(cat /c/Projects/borcTakip/app/\\\\\\(tabs\\\\\\)/_layout.tsx)"
-    ]
-  }
-}
