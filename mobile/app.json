@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Yuvam",
+    "slug": "yuvam",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/yuvam.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/yuvam.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F8F4EF"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yuvam.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/yuvam.png",
+        "backgroundColor": "#F8F4EF"
+      },
+      "package": "com.yuvam.mobile"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Çeyiz uygulaması fotoğraf galerinize erişmek istiyor.",
+          "cameraPermission": "Çeyiz uygulaması kamera kullanmak istiyor."
+        }
+      ]
+    ]
+  }
+}
