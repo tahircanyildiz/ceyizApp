@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getPartner, addPartner, updatePartner } from '../services/api';
+import { exportToExcel } from '../services/exportService';
 import { useAuth } from '../context/AuthContext';
 
 const COLORS = {
@@ -38,6 +39,7 @@ export default function SettingsScreen() {
   // Yeni partner ekleme formu
   const [addForm, setAddForm] = useState({ fullName: '', username: '', password: '' });
   const [addLoading, setAddLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   // Partner düzenleme modal
   const [editModal, setEditModal] = useState(false);
@@ -186,6 +188,30 @@ export default function SettingsScreen() {
           )}
         </View>
 
+        {/* Export */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.exportBtn}
+            onPress={async () => {
+              setExporting(true);
+              try {
+                await exportToExcel();
+              } catch (err) {
+                Alert.alert('Hata', err.message);
+              } finally {
+                setExporting(false);
+              }
+            }}
+            disabled={exporting}
+          >
+            {exporting ? (
+              <ActivityIndicator color={COLORS.primary} />
+            ) : (
+              <Text style={styles.exportBtnText}>Excel Olarak Dışa Aktar</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
         {/* Çıkış */}
         <View style={styles.section}>
           <TouchableOpacity style={styles.logoutBtn} onPress={() => Alert.alert('Çıkış Yap', 'Hesabınızdan çıkmak istediğinize emin misiniz?', [{ text: 'İptal', style: 'cancel' }, { text: 'Çıkış Yap', style: 'destructive', onPress: logout }])}>
@@ -270,6 +296,11 @@ const styles = StyleSheet.create({
     paddingVertical: 13, alignItems: 'center', marginTop: 14,
   },
   addBtnText: { color: '#FFF', fontWeight: '700', fontSize: 15 },
+  exportBtn: {
+    borderWidth: 1, borderColor: COLORS.primary, borderRadius: 12,
+    paddingVertical: 14, alignItems: 'center', backgroundColor: COLORS.card,
+  },
+  exportBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 15 },
   logoutBtn: {
     borderWidth: 1, borderColor: COLORS.danger, borderRadius: 12,
     paddingVertical: 14, alignItems: 'center',
