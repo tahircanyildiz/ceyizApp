@@ -20,7 +20,10 @@
         "foregroundImage": "./assets/yuvam.png",
         "backgroundColor": "#F8F4EF"
       },
-      "package": "com.yuvam.mobile"
+      "package": "com.yuvam.mobile",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       [
@@ -30,6 +33,12 @@
           "cameraPermission": "Çeyiz uygulaması kamera kullanmak istiyor."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "54b7473b-a382-430b-b766-fd1b6c41b60b"
+      }
+    },
+    "owner": "mrpurposeless53"
   }
 }

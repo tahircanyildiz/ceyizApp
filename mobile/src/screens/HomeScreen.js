@@ -10,8 +10,11 @@ import {
   Modal,
   ActivityIndicator,
   RefreshControl,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCategories, createCategory, deleteCategory } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import SpendingSummary from '../components/SpendingSummary';
@@ -34,6 +37,7 @@ export default function HomeScreen({ navigation }) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [saving, setSaving] = useState(false);
   const { logout } = useAuth();
+  const insets = useSafeAreaInsets();
 
   const fetchCategories = async () => {
     try {
@@ -133,19 +137,23 @@ export default function HomeScreen({ navigation }) {
         ListEmptyComponent={
           <Text style={styles.empty}>Henüz kategori yok. "+" ile ekleyin.</Text>
         }
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingBottom: 100 + insets.bottom }]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchCategories(); }} tintColor={COLORS.primary} />
         }
       />
 
-      <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
+      <TouchableOpacity style={[styles.fab, { bottom: 28 + insets.bottom }]} onPress={() => setModalVisible(true)}>
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
 
       <Modal visible={modalVisible} transparent animationType="slide">
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+          <View style={[styles.modalCard, { paddingBottom: insets.bottom || 24 }]}>
             <Text style={styles.modalTitle}>Yeni Kategori</Text>
             <TextInput
               style={styles.modalInput}
@@ -168,6 +176,7 @@ export default function HomeScreen({ navigation }) {
             </View>
           </View>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );

@@ -13,6 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createProduct, updateProduct, uploadImage } from '../services/api';
 
 const COLORS = {
@@ -27,6 +28,7 @@ const COLORS = {
 export default function AddEditProductScreen({ route, navigation }) {
   const { product, categoryId, purchaseMode } = route.params || {};
   const isEdit = !!product;
+  const insets = useSafeAreaInsets();
 
   // purchaseMode: alındı işaretlenirken detay girme ekranı
   // isEdit && product.isPurchased: satın alınmış ürünü düzenleme
@@ -112,11 +114,11 @@ export default function AddEditProductScreen({ route, navigation }) {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: 40 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
       >
         {/* Fotoğraf — sadece purchase fields ekranında */}

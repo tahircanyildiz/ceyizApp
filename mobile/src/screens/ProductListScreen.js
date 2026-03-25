@@ -10,6 +10,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getProducts, deleteProduct } from '../services/api';
 import ProductCard from '../components/ProductCard';
 import FilterBar from '../components/FilterBar';
@@ -24,6 +25,7 @@ const COLORS = {
 
 export default function ProductListScreen({ route, navigation }) {
   const { categoryId, categoryName } = route.params;
+  const insets = useSafeAreaInsets();
   const [products, setProducts] = useState([]);
   const [filter, setFilter] = useState('all'); // all | purchased | unpurchased
   const [loading, setLoading] = useState(true);
@@ -119,16 +121,14 @@ export default function ProductListScreen({ route, navigation }) {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchProducts(); }} tintColor={COLORS.primary} />
         }
-        ListFooterComponent={
-          products.length > 0 ? (
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>
-                Harcanan: {totalSpend.toLocaleString('tr-TR')} ₺
-              </Text>
-            </View>
-          ) : null
-        }
       />
+
+      {products.length > 0 && (
+        <View style={[styles.footer, { paddingBottom: 16 + insets.bottom }]}>
+          <Text style={styles.footerLabel}>Harcanan</Text>
+          <Text style={styles.footerText}>{totalSpend.toLocaleString('tr-TR')} ₺</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -136,8 +136,18 @@ export default function ProductListScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  list: { padding: 16, paddingBottom: 40 },
+  list: { padding: 16, paddingBottom: 12 },
   empty: { textAlign: 'center', color: COLORS.muted, marginTop: 40, fontSize: 15 },
-  footer: { marginTop: 20, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#E0D9D0', alignItems: 'center' },
-  footerText: { fontSize: 16, fontWeight: '700', color: COLORS.primary },
+  footer: {
+    backgroundColor: COLORS.card,
+    borderTopWidth: 1,
+    borderTopColor: '#E0D9D0',
+    paddingTop: 14,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  footerLabel: { fontSize: 14, color: COLORS.muted, fontWeight: '600' },
+  footerText: { fontSize: 18, fontWeight: '800', color: COLORS.primary },
 });
