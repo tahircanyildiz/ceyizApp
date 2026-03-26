@@ -36,6 +36,17 @@ exports.register = async (req, res) => {
   }
 };
 
+exports.updatePlayerID = async (req, res) => {
+  try {
+    const { playerId } = req.body;
+    if (!playerId) return res.status(400).json({ message: 'playerId zorunludur' });
+    await User.findByIdAndUpdate(req.user._id, { oneSignalPlayerId: playerId });
+    res.json({ message: 'Player ID güncellendi' });
+  } catch (err) {
+    res.status(500).json({ message: 'Player ID güncellenemedi', error: err.message });
+  }
+};
+
 exports.login = async (req, res) => {
   try {
     const { identifier, password } = req.body;

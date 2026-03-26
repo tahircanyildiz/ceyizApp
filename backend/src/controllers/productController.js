@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const { notifyPartner } = require('../utils/notify');
 
 exports.getProductById = async (req, res) => {
   try {
@@ -44,6 +45,7 @@ exports.createProduct = async (req, res) => {
     });
 
     await product.save();
+    notifyPartner(req.user._id, req.householdId, 'Yeni Ürün', `"${name}" listeye eklendi`);
     res.status(201).json(product);
   } catch (err) {
     res.status(500).json({ message: 'Ürün oluşturulamadı', error: err.message });
@@ -66,6 +68,10 @@ exports.updateProduct = async (req, res) => {
 
     if (!product) {
       return res.status(404).json({ message: 'Ürün bulunamadı' });
+    }
+
+    if (isPurchased === true) {
+      notifyPartner(req.user._id, req.householdId, 'Ürün Alındı', `"${product.name}" satın alındı olarak işaretlendi`);
     }
 
     res.json(product);

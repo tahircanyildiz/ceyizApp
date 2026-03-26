@@ -1,4 +1,5 @@
 const Category = require('../models/Category');
+const { notifyPartner } = require('../utils/notify');
 
 exports.getCategories = async (req, res) => {
   try {
@@ -23,6 +24,7 @@ exports.createCategory = async (req, res) => {
     });
 
     await category.save();
+    notifyPartner(req.user._id, req.householdId, 'Yeni Kategori', `"${name}" kategorisi eklendi`);
     res.status(201).json(category);
   } catch (err) {
     res.status(500).json({ message: 'Kategori oluşturulamadı', error: err.message });
