@@ -13,11 +13,17 @@ exports.getProductById = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
   try {
-    const { categoryId } = req.query;
+    const { categoryId, parentId, search } = req.query;
     const filter = { householdId: req.householdId };
 
-    if (categoryId) {
-      filter.categoryId = categoryId;
+    if (categoryId) filter.categoryId = categoryId;
+
+    if (search) {
+      filter.name = { $regex: search, $options: 'i' };
+    } else if (parentId) {
+      filter.parentId = parentId;
+    } else {
+      filter.parentId = null;
     }
 
     const products = await Product.find(filter).sort({ createdAt: -1 });
@@ -29,7 +35,7 @@ exports.getProducts = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
   try {
-    const { name, price, brand, imageUrl, categoryId } = req.body;
+    const { name, price, brand, imageUrl, categoryId, parentId } = req.body;
 
     if (!name || !categoryId) {
       return res.status(400).json({ message: 'Ürün adı ve kategori zorunludur' });
@@ -41,6 +47,7 @@ exports.createProduct = async (req, res) => {
       brand: brand || '',
       imageUrl: imageUrl || '',
       categoryId,
+      parentId: parentId || null,
       householdId: req.householdId,
     });
 

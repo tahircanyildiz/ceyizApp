@@ -29,6 +29,7 @@ api.interceptors.response.use(
 // Auth
 export const register = (data) => api.post('/auth/register', data);
 export const login = (data) => api.post('/auth/login', data);
+export const updatePlayerID = (playerId) => api.put('/auth/player-id', { playerId });
 
 // Partner
 export const getPartner = () => api.get('/partner');
@@ -44,10 +45,15 @@ export const deleteCategory = (id) => api.delete(`/categories/${id}`);
 // Products
 export const getProducts = (categoryId) =>
   api.get('/products', { params: { categoryId } });
+export const searchProducts = (query) =>
+  api.get('/products', { params: { search: query } });
 export const getProductById = (id) => api.get(`/products/${id}`);
 export const createProduct = (data) => api.post('/products', data);
 export const updateProduct = (id, data) => api.put(`/products/${id}`, data);
 export const deleteProduct = (id) => api.delete(`/products/${id}`);
+
+// Chat
+export const sendChatMessage = (messages) => api.post('/chat', { messages });
 
 // Upload
 export const uploadImage = async (imageUri) => {

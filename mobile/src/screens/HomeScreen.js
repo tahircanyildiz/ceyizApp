@@ -95,9 +95,17 @@ export default function HomeScreen({ navigation }) {
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={{ marginRight: 4, paddingHorizontal: 10, paddingVertical: 8 }}>
-          <Text style={{ color: COLORS.primary, fontSize: 14, fontWeight: '600' }}>Ayarlar</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => navigation.navigate('Search')} style={{ paddingHorizontal: 10, paddingVertical: 8 }}>
+            <Text style={{ color: COLORS.primary, fontSize: 18 }}>🔍</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Statistics')} style={{ paddingHorizontal: 10, paddingVertical: 8 }}>
+            <Text style={{ color: COLORS.primary, fontSize: 14, fontWeight: '600' }}>İstatistik</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={{ marginRight: 4, paddingHorizontal: 10, paddingVertical: 8 }}>
+            <Text style={{ color: COLORS.primary, fontSize: 14, fontWeight: '600' }}>Ayarlar</Text>
+          </TouchableOpacity>
+        </View>
       ),
     });
   }, [navigation]);
@@ -139,6 +147,10 @@ export default function HomeScreen({ navigation }) {
 
       <TouchableOpacity style={[styles.fab, { bottom: 28 + insets.bottom }]} onPress={() => setModalVisible(true)}>
         <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.chatFab, { bottom: 28 + insets.bottom }]} onPress={() => navigation.navigate('Chat')}>
+        <Text style={styles.chatFabText}>💬</Text>
       </TouchableOpacity>
 
       <Modal visible={modalVisible} transparent animationType="slide">
@@ -198,6 +210,25 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
   fabText: { color: '#FFF', fontSize: 28, fontWeight: '300', marginTop: -2 },
+  chatFab: {
+    position: 'absolute',
+    bottom: 28,
+    left: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.card,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  chatFabText: { fontSize: 24 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   modalCard: { backgroundColor: COLORS.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24 },
   modalTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text, marginBottom: 16 },

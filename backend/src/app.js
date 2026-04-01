@@ -8,6 +8,7 @@ const partnerRoutes = require('./routes/partner');
 const categoryRoutes = require('./routes/categories');
 const productRoutes = require('./routes/products');
 const uploadRoutes = require('./routes/upload');
+const chatRoutes = require('./routes/chat');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use('/api/partner', partnerRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

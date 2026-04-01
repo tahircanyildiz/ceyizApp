@@ -72,64 +72,77 @@ export default function ProductDetailScreen({ route, navigation }) {
 
   return (
     <View style={{ flex: 1 }}>
-    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingBottom: 32 + insets.bottom }]}>
-      {product.imageUrl ? (
-        <TouchableOpacity onPress={() => setImageModalVisible(true)} activeOpacity={0.9}>
-          <Image source={{ uri: product.imageUrl }} style={styles.image} resizeMode="cover" />
-        </TouchableOpacity>
-      ) : (
-        <View style={styles.imagePlaceholder}>
-          <Text style={styles.imagePlaceholderText}>Fotoğraf Yok</Text>
-        </View>
-      )}
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[styles.content, { paddingBottom: 32 + insets.bottom }]}
+      >
+        {product.imageUrl ? (
+          <TouchableOpacity onPress={() => setImageModalVisible(true)} activeOpacity={0.9}>
+            <Image source={{ uri: product.imageUrl }} style={styles.image} resizeMode="cover" />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <Text style={styles.imagePlaceholderText}>Fotoğraf Yok</Text>
+          </View>
+        )}
 
-      <View style={styles.card}>
-        <View style={styles.row}>
-          <Text style={styles.productName}>{product.name}</Text>
-          <View style={[styles.badge, product.isPurchased && styles.badgePurchased]}>
-            <Text style={[styles.badgeText, product.isPurchased && styles.badgeTextPurchased]}>
-              {product.isPurchased ? 'Alındı' : 'Bekliyor'}
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <Text style={styles.productName}>{product.name}</Text>
+            <View style={[styles.badge, product.isPurchased && styles.badgePurchased]}>
+              <Text style={[styles.badgeText, product.isPurchased && styles.badgeTextPurchased]}>
+                {product.isPurchased ? 'Alındı' : 'Bekliyor'}
+              </Text>
+            </View>
+          </View>
+
+          {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
+
+          {product.price > 0 ? (
+            <Text style={styles.price}>{product.price.toLocaleString('tr-TR')} ₺</Text>
+          ) : null}
+
+          {product.isPurchased && product.purchasedAt ? (
+            <Text style={styles.date}>
+              Alınma: {new Date(product.purchasedAt).toLocaleDateString('tr-TR')}
             </Text>
+          ) : null}
+
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={styles.editBtn}
+              onPress={() => navigation.navigate('AddEditProduct', { product })}
+            >
+              <Text style={styles.editBtnText}>Düzenle</Text>
+            </TouchableOpacity>
+
+            {!product.isPurchased && (
+              <TouchableOpacity style={styles.purchaseBtn} onPress={handleMarkPurchased}>
+                <Text style={styles.purchaseBtnText}>Alındı Olarak İşaretle</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
+      </ScrollView>
 
-        {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
-
-        {product.price > 0 ? (
-          <Text style={styles.price}>{product.price.toLocaleString('tr-TR')} ₺</Text>
-        ) : null}
-
-        {product.isPurchased && product.purchasedAt ? (
-          <Text style={styles.date}>
-            Alınma: {new Date(product.purchasedAt).toLocaleDateString('tr-TR')}
-          </Text>
-        ) : null}
-
-        <View style={styles.actions}>
-          {/* Düzenle: satın alınmadıysa sadece isim, alındıysa detaylar */}
-          <TouchableOpacity
-            style={styles.editBtn}
-            onPress={() => navigation.navigate('AddEditProduct', { product })}
-          >
-            <Text style={styles.editBtnText}>Düzenle</Text>
-          </TouchableOpacity>
-
-          {/* Alındı butonu — sadece henüz alınmadıysa göster */}
-          {!product.isPurchased && (
-            <TouchableOpacity style={styles.purchaseBtn} onPress={handleMarkPurchased}>
-              <Text style={styles.purchaseBtnText}>Alındı Olarak İşaretle</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-    </ScrollView>
-
-      <Modal visible={imageModalVisible} transparent animationType="fade" onRequestClose={() => setImageModalVisible(false)}>
+      <Modal
+        visible={imageModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setImageModalVisible(false)}
+      >
         <View style={styles.imageModal}>
-          <TouchableOpacity style={styles.imageModalClose} onPress={() => setImageModalVisible(false)}>
+          <TouchableOpacity
+            style={styles.imageModalClose}
+            onPress={() => setImageModalVisible(false)}
+          >
             <Text style={styles.imageModalCloseText}>✕</Text>
           </TouchableOpacity>
-          <Image source={{ uri: product.imageUrl }} style={styles.imageModalImg} resizeMode="contain" />
+          <Image
+            source={{ uri: product.imageUrl }}
+            style={styles.imageModalImg}
+            resizeMode="contain"
+          />
         </View>
       </Modal>
     </View>

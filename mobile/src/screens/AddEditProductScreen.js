@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { createProduct, updateProduct, uploadImage } from '../services/api';
+import { createProduct, updateProduct, uploadImage, getProducts } from '../services/api';
 
 const COLORS = {
   primary: '#8B5E3C',
@@ -26,14 +26,14 @@ const COLORS = {
 };
 
 export default function AddEditProductScreen({ route, navigation }) {
-  const { product, categoryId, purchaseMode } = route.params || {};
+  const { product, categoryId, purchaseMode, parentId } = route.params || {};
   const isEdit = !!product;
   const insets = useSafeAreaInsets();
 
   // purchaseMode: alındı işaretlenirken detay girme ekranı
   // isEdit && product.isPurchased: satın alınmış ürünü düzenleme
   const showPurchaseFields = purchaseMode || (isEdit && product?.isPurchased);
-  const showNameField = !showPurchaseFields;
+  const showNameField = !purchaseMode; // purchase mode dışında her zaman ad alanı göster
 
   const [name, setName] = useState(product?.name || '');
   const [price, setPrice] = useState(product?.price > 0 ? product.price.toString() : '');
@@ -69,12 +69,7 @@ export default function AddEditProductScreen({ route, navigation }) {
     ]);
   };
 
-  const handleSave = async () => {
-    if (showNameField && !name.trim()) {
-      Alert.alert('Hata', 'Ürün adı zorunludur');
-      return;
-    }
-
+  const doSave = async () => {
     setSaving(true);
     try {
       let finalImageUrl = imageUri;
@@ -88,9 +83,8 @@ export default function AddEditProductScreen({ route, navigation }) {
 
       if (isEdit) {
         const payload = {};
-        if (showNameField) {
-          payload.name = name.trim();
-        } else {
+        if (showNameField) payload.name = name.trim();
+        if (showPurchaseFields) {
           payload.price = parseFloat(price) || 0;
           payload.brand = brand.trim();
           payload.imageUrl = finalImageUrl || null;
@@ -98,7 +92,7 @@ export default function AddEditProductScreen({ route, navigation }) {
         }
         await updateProduct(product._id, payload);
       } else {
-        await createProduct({ name: name.trim(), categoryId });
+        await createProduct({ name: name.trim(), categoryId, parentId: parentId || null });
       }
 
       navigation.goBack();
@@ -108,6 +102,38 @@ export default function AddEditProductScreen({ route, navigation }) {
       setSaving(false);
       setUploading(false);
     }
+  };
+
+  const handleSave = async () => {
+    if (showNameField && !name.trim()) {
+      Alert.alert('Hata', 'Ürün adı zorunludur');
+      return;
+    }
+
+    // Yeni ürün eklenirken benzer isim kontrolü
+    if (!isEdit && showNameField) {
+      try {
+        const res = await getProducts(categoryId);
+        const trimmedName = name.trim().toLowerCase();
+        const similar = res.data.filter(p => {
+          const existing = p.name.toLowerCase();
+          return existing.includes(trimmedName) || trimmedName.includes(existing);
+        });
+        if (similar.length > 0) {
+          Alert.alert(
+            'Benzer Ürün Mevcut',
+            `"${similar[0].name}" adında benzer bir ürün zaten var. Yine de eklemek istiyor musunuz?`,
+            [
+              { text: 'İptal', style: 'cancel' },
+              { text: 'Yine de Ekle', onPress: doSave },
+            ]
+          );
+          return;
+        }
+      } catch {}
+    }
+
+    doSave();
   };
 
   return (

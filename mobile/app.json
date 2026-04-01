@@ -32,6 +32,13 @@
           "photosPermission": "Çeyiz uygulaması fotoğraf galerinize erişmek istiyor.",
           "cameraPermission": "Çeyiz uygulaması kamera kullanmak istiyor."
         }
+      ],
+      [
+        "onesignal-expo-plugin",
+        {
+          "mode": "production",
+          "largeIcons": ["./assets/yuvam.png"]
+        }
       ]
     ],
     "extra": {

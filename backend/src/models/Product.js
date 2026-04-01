@@ -28,6 +28,11 @@ const productSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    parentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+      default: null,
+    },
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',

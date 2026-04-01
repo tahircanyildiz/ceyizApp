@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login as apiLogin, register as apiRegister } from '../services/api';
+import Constants from 'expo-constants';
+import { login as apiLogin, register as apiRegister, updatePlayerID } from '../services/api';
+
+const isExpoGo = Constants.executionEnvironment === 'storeClient';
 
 const AuthContext = createContext(null);
 
@@ -43,6 +46,14 @@ export const AuthProvider = ({ children }) => {
     await AsyncStorage.setItem('user', JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
+    // OneSignal player ID'yi backend'e kaydet (Expo Go'da çalışmaz)
+    if (!isExpoGo) {
+      try {
+        const { OneSignal } = require('react-native-onesignal');
+        const playerId = await OneSignal.User.pushSubscription.getIdAsync();
+        if (playerId) await updatePlayerID(playerId);
+      } catch {}
+    }
   };
 
   const logout = async () => {

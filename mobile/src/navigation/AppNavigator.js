@@ -12,6 +12,9 @@ import ProductListScreen from '../screens/ProductListScreen';
 import ProductDetailScreen from '../screens/ProductDetailScreen';
 import AddEditProductScreen from '../screens/AddEditProductScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import ChatScreen from '../screens/ChatScreen';
+import StatisticsScreen from '../screens/StatisticsScreen';
+import SearchScreen from '../screens/SearchScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -56,6 +59,9 @@ export default function AppNavigator() {
               return { title: 'Ürün Ekle' };
             }} />
             <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Ayarlar' }} />
+            <Stack.Screen name="Chat" component={ChatScreen} options={{ title: 'Yuvam Asistan' }} />
+            <Stack.Screen name="Statistics" component={StatisticsScreen} options={{ title: 'İstatistikler' }} />
+            <Stack.Screen name="Search" component={SearchScreen} options={{ title: 'Ürün Ara' }} />
           </>
         )}
       </Stack.Navigator>

@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   RefreshControl,
+  TextInput,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -27,7 +28,8 @@ export default function ProductListScreen({ route, navigation }) {
   const { categoryId, categoryName } = route.params;
   const insets = useSafeAreaInsets();
   const [products, setProducts] = useState([]);
-  const [filter, setFilter] = useState('all'); // all | purchased | unpurchased
+  const [filter, setFilter] = useState('unpurchased');
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -80,8 +82,9 @@ export default function ProductListScreen({ route, navigation }) {
   };
 
   const filtered = products.filter((p) => {
-    if (filter === 'purchased') return p.isPurchased;
-    if (filter === 'unpurchased') return !p.isPurchased;
+    if (filter === 'purchased' && !p.isPurchased) return false;
+    if (filter === 'unpurchased' && p.isPurchased) return false;
+    if (search.trim()) return p.name.toLowerCase().includes(search.trim().toLowerCase());
     return true;
   });
 
@@ -100,6 +103,14 @@ export default function ProductListScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       <FilterBar active={filter} onChange={setFilter} />
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Ürün ara..."
+        placeholderTextColor={COLORS.muted}
+        value={search}
+        onChangeText={setSearch}
+        clearButtonMode="while-editing"
+      />
 
       <FlatList
         data={filtered}
@@ -142,6 +153,19 @@ export default function ProductListScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
+  searchInput: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 4,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    fontSize: 14,
+    color: COLORS.text,
+    borderWidth: 1,
+    borderColor: '#E0D9D0',
+  },
   list: { padding: 16, paddingBottom: 12 },
   empty: { textAlign: 'center', color: COLORS.muted, marginTop: 40, fontSize: 15 },
   footer: {
