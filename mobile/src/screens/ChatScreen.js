@@ -12,8 +12,10 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAudioRecorder, AudioModule, RecordingPresets } from 'expo-audio';
+import * as Speech from 'expo-speech';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { sendChatMessage } from '../services/api';
+import { sendChatMessage, transcribeAudio } from '../services/api';
 import { exportToExcel } from '../services/exportService';
 
 const COLORS = {
@@ -34,9 +36,13 @@ const GREETING = {
 };
 
 export default function ChatScreen({ navigation }) {
-  const [messages, setMessages] = useState(null); // null = henüz yüklenmedi
+  const [messages, setMessages] = useState(null);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const flatListRef = useRef(null);
   const insets = useSafeAreaInsets();
@@ -93,11 +99,47 @@ export default function ChatScreen({ navigation }) {
     ]);
   };
 
-  const handleSend = async () => {
-    const trimmed = input.trim();
-    if (!trimmed || loading) return;
+  const handleMic = async () => {
+    if (isSpeaking) {
+      Speech.stop();
+      setIsSpeaking(false);
+      return;
+    }
+    if (isRecording) {
+      // Kaydı durdur → metne çevir → otomatik gönder
+      try {
+        await audioRecorder.stop();
+        setIsRecording(false);
+        const uri = audioRecorder.uri;
+        if (!uri) return;
+        setTranscribing(true);
+        const text = await transcribeAudio(uri);
+        setTranscribing(false);
+        if (text?.trim()) await sendMessage(text.trim(), true);
+      } catch (err) {
+        Alert.alert('Hata', err.message);
+        setIsRecording(false);
+        setTranscribing(false);
+      }
+    } else {
+      // Kayda başla
+      try {
+        Speech.stop(); // varsa sesi durdur
+        const { granted } = await AudioModule.requestRecordingPermissionsAsync();
+        if (!granted) { Alert.alert('İzin Gerekli', 'Mikrofon izni verilmedi.'); return; }
+        await audioRecorder.prepareToRecordAsync();
+        audioRecorder.record();
+        setIsRecording(true);
+      } catch (err) {
+        Alert.alert('Hata', 'Kayıt başlatılamadı: ' + err.message);
+      }
+    }
+  };
 
-    const userMsg = { id: Date.now().toString(), role: 'user', content: trimmed };
+  const sendMessage = async (text, speakReply = false) => {
+    if (!text || loading) return;
+
+    const userMsg = { id: Date.now().toString(), role: 'user', content: text };
     const updatedMessages = [...messages, userMsg];
     setMessages(updatedMessages);
     setInput('');
@@ -109,19 +151,23 @@ export default function ChatScreen({ navigation }) {
         .map(({ role, content }) => ({ role, content }));
 
       const res = await sendChatMessage(apiMessages);
-      const assistantMsg = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: res.data.reply,
-      };
+      const reply = res.data.reply;
+      const assistantMsg = { id: (Date.now() + 1).toString(), role: 'assistant', content: reply };
       setMessages((prev) => [...prev, assistantMsg]);
 
+      if (speakReply) {
+        setIsSpeaking(true);
+        Speech.speak(reply, {
+          language: 'tr-TR',
+          rate: 1.0,
+          onDone: () => setIsSpeaking(false),
+          onStopped: () => setIsSpeaking(false),
+          onError: () => setIsSpeaking(false),
+        });
+      }
+
       if (res.data.triggerExport) {
-        try {
-          await exportToExcel();
-        } catch (e) {
-          Alert.alert('Export Hatası', e.message);
-        }
+        try { await exportToExcel(); } catch (e) { Alert.alert('Export Hatası', e.message); }
       }
     } catch (err) {
       Alert.alert('Hata', err.message);
@@ -129,6 +175,8 @@ export default function ChatScreen({ navigation }) {
       setLoading(false);
     }
   };
+
+  const handleSend = () => sendMessage(input.trim(), false);
 
   const renderItem = ({ item }) => {
     const isUser = item.role === 'user';
@@ -171,15 +219,26 @@ export default function ChatScreen({ navigation }) {
       )}
 
       <View style={[styles.inputRow, { paddingBottom: keyboardHeight > 0 ? 12 : (insets.bottom || 12) }]}>
+        <TouchableOpacity
+          style={[styles.micBtn, isRecording && styles.micBtnActive, isSpeaking && styles.micBtnSpeaking]}
+          onPress={handleMic}
+          disabled={transcribing || loading}
+        >
+          {transcribing
+            ? <ActivityIndicator size="small" color={COLORS.primary} />
+            : <Text style={styles.micBtnText}>{isRecording ? '⏹' : isSpeaking ? '🔇' : '🎤'}</Text>
+          }
+        </TouchableOpacity>
         <TextInput
           style={styles.input}
-          placeholder="Bir şey sor..."
-          placeholderTextColor={COLORS.muted}
+          placeholder={isRecording ? 'Konuşun...' : 'Bir şey sor...'}
+          placeholderTextColor={isRecording ? COLORS.primary : COLORS.muted}
           value={input}
           onChangeText={setInput}
           onSubmitEditing={handleSend}
           returnKeyType="send"
           multiline
+          editable={!isRecording}
         />
         <TouchableOpacity
           style={[styles.sendBtn, (!input.trim() || loading) && styles.sendBtnDisabled]}
@@ -257,4 +316,23 @@ const styles = StyleSheet.create({
   },
   sendBtnDisabled: { backgroundColor: COLORS.border },
   sendBtnText: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+  micBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  micBtnActive: {
+    backgroundColor: '#FFE8E8',
+    borderColor: '#E57373',
+  },
+  micBtnSpeaking: {
+    backgroundColor: '#E8F5E9',
+    borderColor: '#4CAF50',
+  },
+  micBtnText: { fontSize: 18 },
 });

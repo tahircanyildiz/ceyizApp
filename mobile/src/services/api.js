@@ -1,5 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system';
 
 // Geliştirme ortamında kendi IP adresinizi kullanın
 // Expo Go ile test ederken localhost yerine bilgisayarınızın local IP'si gerekir
@@ -54,6 +55,15 @@ export const deleteProduct = (id) => api.delete(`/products/${id}`);
 
 // Chat
 export const sendChatMessage = (messages) => api.post('/chat', { messages });
+
+// Transcribe
+export const transcribeAudio = async (audioUri) => {
+  const base64 = await FileSystem.readAsStringAsync(audioUri, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+  const res = await api.post('/transcribe', { audio: base64 });
+  return res.data.text;
+};
 
 // Upload
 export const uploadImage = async (imageUri) => {

@@ -6,15 +6,40 @@ Yuvam, çiftlerin çeyiz alışverişlerini birlikte planlayıp takip edebildiğ
 
 ## Özellikler
 
+### Temel
 - Kategori bazlı ürün yönetimi (Mutfak, Yatak Odası, Salon vb.)
 - Ürün ekleme, düzenleme, silme
-- Ürün fotoğrafı yükleme (kamera veya galeri)
+- Ürün fotoğrafı yükleme (kamera veya galeri, kırpmasız)
 - Alındı işaretleme — marka, fiyat ve fotoğraf girişiyle birlikte
 - Alınma tarihi takibi
-- Harcama özeti (kategoriler toplamı ve her kategori detayı)
-- Filtre: Tümü / Bekleyenler / Alınanlar
-- Partner sistemi — iki kullanıcı aynı listeyi paylaşır
-- JWT tabanlı kimlik doğrulama
+- Filtre: Tümü / Bekleyenler / Alınanlar (varsayılan: Bekleyenler)
+- Fotoğrafa tıklayınca tam ekran görüntüleme
+- Benzer ürün adı uyarısı
+
+### Arama
+- Kategori içi ürün arama (anlık filtreleme)
+- Tüm kategorilerde global ürün arama
+
+### Partner Sistemi
+- İki kullanıcı aynı listeyi gerçek zamanlı paylaşır
+- Partner ürün/kategori eklediğinde push bildirimi gönderilir (OneSignal)
+
+### AI Asistan
+- GPT-4o-mini tabanlı Türkçe çeyiz asistanı
+- Asistan üzerinden ürün/kategori ekleme, güncelleme, silme
+- Sesli sohbet: konuşarak soru sor, yanıtı sesli dinle (Whisper + expo-speech)
+- Excel export asistan üzerinden tetiklenebilir
+- Sohbet geçmişi cihazda saklanır
+
+### İstatistikler
+- Kategori bazında tamamlanma oranı (progress bar)
+- Kategori bazında harcama dağılımı
+- Toplam ürün, alınan, bekleyen ve harcama özeti
+
+### Dışa Aktarma
+- Excel export (Android: doğrudan kayıt, iOS: paylaşım)
+- Tüm ürünler: kategori, marka, fiyat, durum, alınma tarihi
+- Özet satırları: toplam ürün, alınan, bekleyen, toplam harcama
 
 ---
 
@@ -27,6 +52,8 @@ Yuvam, çiftlerin çeyiz alışverişlerini birlikte planlayıp takip edebildiğ
 | Veritabanı | MongoDB + Mongoose |
 | Görsel Depolama | Cloudinary |
 | Kimlik Doğrulama | JWT |
+| Push Bildirim | OneSignal |
+| AI | OpenAI GPT-4o-mini + Whisper |
 | Build | EAS Build |
 
 ---
@@ -42,6 +69,7 @@ ceyizApp/
 │       │   ├── partnerController.js
 │       │   ├── categoryController.js
 │       │   ├── productController.js
+│       │   ├── chatController.js
 │       │   └── uploadController.js
 │       ├── models/
 │       │   ├── User.js
@@ -52,9 +80,13 @@ ceyizApp/
 │       │   ├── partner.js
 │       │   ├── categories.js
 │       │   ├── products.js
+│       │   ├── chat.js
+│       │   ├── transcribe.js
 │       │   └── upload.js
 │       ├── middleware/
 │       │   └── auth.js
+│       ├── utils/
+│       │   └── notify.js
 │       ├── config/
 │       │   └── cloudinary.js
 │       └── app.js
@@ -68,7 +100,10 @@ ceyizApp/
         │   ├── ProductListScreen.js
         │   ├── ProductDetailScreen.js
         │   ├── AddEditProductScreen.js
-        │   └── SettingsScreen.js
+        │   ├── SettingsScreen.js
+        │   ├── ChatScreen.js
+        │   ├── SearchScreen.js
+        │   └── StatisticsScreen.js
         ├── components/
         │   ├── CategoryCard.js
         │   ├── ProductCard.js
@@ -77,7 +112,8 @@ ceyizApp/
         ├── context/
         │   └── AuthContext.js
         ├── services/
-        │   └── api.js
+        │   ├── api.js
+        │   └── exportService.js
         └── navigation/
             └── AppNavigator.js
 ```
@@ -98,6 +134,7 @@ Tüm endpointler (auth hariç) `Authorization: Bearer <token>` header'ı gerekti
 |--------|----------|----------|
 | POST | `/api/auth/register` | Kayıt ol |
 | POST | `/api/auth/login` | Giriş yap |
+| PUT | `/api/auth/player-id` | OneSignal player ID güncelle |
 | GET | `/api/partner` | Partner bilgisini getir |
 | POST | `/api/partner/add` | Partner hesabı oluştur |
 | PUT | `/api/partner/:id` | Partner bilgilerini güncelle |
@@ -106,10 +143,13 @@ Tüm endpointler (auth hariç) `Authorization: Bearer <token>` header'ı gerekti
 | PUT | `/api/categories/:id` | Kategori güncelle |
 | DELETE | `/api/categories/:id` | Kategori sil |
 | GET | `/api/products?categoryId=` | Ürünleri listele |
+| GET | `/api/products?search=` | Ürün ara (global) |
 | GET | `/api/products/:id` | Ürün detayını getir |
 | POST | `/api/products` | Ürün ekle |
 | PUT | `/api/products/:id` | Ürün güncelle |
 | DELETE | `/api/products/:id` | Ürün sil |
+| POST | `/api/chat` | AI asistanla mesajlaş |
+| POST | `/api/transcribe` | Ses kaydını metne çevir (Whisper) |
 | POST | `/api/upload` | Cloudinary'e görsel yükle |
 
 ---
@@ -121,6 +161,8 @@ Tüm endpointler (auth hariç) `Authorization: Bearer <token>` header'ı gerekti
 - Node.js 18+
 - MongoDB Atlas hesabı
 - Cloudinary hesabı
+- OpenAI hesabı (API key)
+- OneSignal hesabı
 - Expo CLI (`npm install -g expo-cli`)
 - EAS CLI (`npm install -g eas-cli`)
 
@@ -131,15 +173,21 @@ cd backend
 npm install
 ```
 
-`backend/.env` dosyası oluşturun:
+`backend/.env` dosyası oluşturun (`backend/.env.example` dosyasını referans alın):
 
 ```env
 PORT=5000
-MONGO_URI=mongodb+srv://<kullanici>:<sifre>@cluster.mongodb.net/ceyizapp
+MONGO_URI=mongodb+srv://<kullanici>:<sifre>@cluster.mongodb.net/yuvam
 JWT_SECRET=gizli_anahtar
+
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
+
+ONESIGNAL_APP_ID=your_onesignal_app_id
+ONESIGNAL_REST_API_KEY=your_onesignal_rest_api_key
+
+OPENAI_API_KEY=sk-...
 ```
 
 ```bash
@@ -153,19 +201,27 @@ cd mobile
 npm install
 ```
 
-`mobile/.env` dosyası oluşturun:
+`mobile/.env` dosyası oluşturun (`mobile/.env.example` dosyasını referans alın):
 
 ```env
-EXPO_PUBLIC_API_URL=https://<backend-url>/api
+EXPO_PUBLIC_API_URL=http://192.168.1.X:5000/api
+EXPO_PUBLIC_ONESIGNAL_APP_ID=your_onesignal_app_id
 ```
 
 ```bash
-npx expo start
+npx expo start --clear
 ```
 
 ---
 
 ## APK Alma (Android)
+
+EAS dashboard'da şu environment variable'ları tanımlayın:
+
+```
+EXPO_PUBLIC_API_URL=https://your-backend.onrender.com/api
+EXPO_PUBLIC_ONESIGNAL_APP_ID=your_onesignal_app_id
+```
 
 ```bash
 cd mobile
@@ -182,8 +238,11 @@ Build tamamlandığında Expo konsolundan `.apk` indirme linki gelir.
 | Ekran | Açıklama |
 |-------|----------|
 | Login / Register | JWT ile kimlik doğrulama |
-| Home | Kategori listesi ve toplam harcama özeti |
-| ProductList | Seçili kategorideki ürünler, filtre (Tümü / Bekleyenler / Alınanlar) |
+| Home | Kategori listesi, harcama özeti, arama ve istatistik butonları |
+| ProductList | Seçili kategorideki ürünler, filtre, kategori içi arama |
 | ProductDetail | Ürün detayı, fotoğraf tam ekran görüntüleme, alındı işaretleme |
 | AddEditProduct | Ürün ekleme/düzenleme; alındı işaretlerken marka, fiyat, fotoğraf girişi |
-| Settings | Hesap bilgileri, partner yönetimi, çıkış |
+| Search | Tüm kategorilerde global ürün arama |
+| Statistics | Kategori tamamlanma oranları ve harcama dağılımı grafikleri |
+| Chat | AI asistan — sesli/yazılı sohbet, ürün/kategori yönetimi |
+| Settings | Hesap bilgileri, partner yönetimi, Excel export, çıkış |

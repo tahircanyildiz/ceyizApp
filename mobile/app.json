@@ -37,9 +37,12 @@
         "onesignal-expo-plugin",
         {
           "mode": "production",
-          "largeIcons": ["./assets/yuvam.png"]
+          "largeIcons": [
+            "./assets/yuvam.png"
+          ]
         }
-      ]
+      ],
+      "expo-audio"
     ],
     "extra": {
       "eas": {
